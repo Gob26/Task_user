@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from config import settings
 
 
-database = Database(settings.DATABASE_URL)
+database = Database(settings.DATABASE_URL_asyncpg)
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 

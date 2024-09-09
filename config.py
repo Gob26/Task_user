@@ -9,7 +9,6 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL_asyncpg(self) -> str:
-        # Формируем строку подключения для asyncpg
         return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
 
     class Config:
@@ -18,5 +17,5 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # проверка подключения
-#db_url = settings.DATABASE_URL_asyncpg()
+#db_url = settings.DATABASE_URL_asyncpg
 #print(db_url)

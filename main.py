@@ -3,12 +3,9 @@ from sqlalchemy.ext.asyncio import create_async_engine,async_sessionmaker, Async
 from config import settings
 
 
-app = FastAPI()
+engine = create_async_engine(settings.DATABASE_URL_asyncpg, echo=True)       # Движок
+async_sessionmaker = async_sessionmaker(
+    engine, class_=AsyncSession,
+    expire_on_commit=False)                       # Отключаем авто-обновление данных после комита
 
-DATABASE_URL_asyncpg = settings.DATABASE_URL_asyncpg()
-engine = create_async_engine(
-    DATABASE_URL_asyncpg,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True                     #Проверка устаревших соединений
-)
+app = FastAPI()

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     DB_NAME: str
 
+    @property
     def DATABASE_URL_asyncpg(self) -> str:
         # Формируем строку подключения для asyncpg
         return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
@@ -14,7 +15,8 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
+settings = Settings()
+
 # проверка подключения
-#settings = Settings()
 #db_url = settings.DATABASE_URL_asyncpg()
 #print(db_url)

@@ -5,7 +5,7 @@ from config import settings
 
 
 database = Database(settings.DATABASE_URL_asyncpg)
-metadata = MetaData()
+metadata = MetaData()                                       #хранятся все данные о таблицах
 Base = declarative_base(metadata=metadata)
 
 

@@ -8,7 +8,7 @@ class TaskBase(BaseModel):
     description: Optional[str] = None
 
 
-class TaskCreate(TaskBase):
+class TaskCreate(TaskBase):          #для возможного расширения
     pass
 
 

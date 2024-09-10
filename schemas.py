@@ -23,8 +23,8 @@ class Task(TaskBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:                   #для чтения данных из orm
-        orm_mode = True
+    class Config:
+        from_attributes = True
 
 
 class UserBase(BaseModel):
@@ -40,4 +40,4 @@ class User(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

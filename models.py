@@ -21,9 +21,9 @@ class Task(Base):
     id: Mapped[intpk]
     title: Mapped[str]
     description: Mapped[str|None]
-    created_at: Mapped[datetime] = mapped_column(server_default=text('TIMEZONE(\'utc\', NOW())'))  #тестировать
+    created_at: Mapped[datetime] = mapped_column(server_default=text('TIMEZONE(\'utc\', NOW())'))  # тестировать
     updated_at: Mapped[datetime] = mapped_column(server_default=text('TIMEZONE(\'utc\', NOW())'),
-    onupdate=datetime.utcnow)
+    onupdate=datetime.utcnow)                                                                      # заменить
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     owner: Mapped["User"] = relationship("User", back_populates="tasks")

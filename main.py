@@ -1,11 +1,10 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, async_session
 from config import settings
 from database import database, Base
 import crud
 import schemas
-
 
 engine = create_async_engine(settings.DATABASE_URL_asyncpg, echo=True)       # асинхронный движок
 async_session_maker = async_sessionmaker(                                     # асинхронная фабрика сессий
@@ -34,36 +33,47 @@ async def get_db() -> AsyncSession:
         yield session
 
 
+@app.post("/users/", response_model=schemas.UserCreate)
+async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_user(db=db, user=user)
+
+
 @app.post("/tasks/", response_model=schemas.Task)
-async def create_task(task: schemas.TaskCreate, user_id, db: AsyncSession = Depends(get_db)):
-    return await crud.create_task(db=db, task=task, user_id=user_id)
+async def create_task(task: schemas.TaskCreate, user_id: int = Query(..., description="ID пользователя"), db: AsyncSession = Depends(get_db)): #???user_id: int = Query(...,
+    db_task = await crud.create_task(db=db, task=task, user_id=user_id)
+    return await crud.task_to_schema(db=db, task=db_task)
+
 
 @app.get("/tasks/", response_model=list[schemas.Task])
 async def read_tasks(user_id: int, db: AsyncSession = Depends(get_db)):
-    return await crud.get_tasks_user(db=db, user_id=user_id)
+    tasks = await crud.get_tasks_user(db=db, user_id=user_id)
+    return [await crud.task_to_schema(db=db, task=task) for task in tasks]
+
 
 @app.get("/tasks/all/", response_model=list[schemas.Task])
 async def read_all_tasks(db: AsyncSession = Depends(get_db)):
-    return await crud.get_tasks_all(db=db)
+    tasks = await crud.get_tasks_all(db=db)
+    return [await crud.task_to_schema(db=db, task=task) for task in tasks]
 
-@app.get("tasks/{task_id}", response_model=schemas.Task)
+
+@app.get("/tasks/{task_id}", response_model=schemas.Task)
 async def read_task(task_id: int, db: AsyncSession = Depends(get_db)):
     db_task = await crud.get_task(db=db, task_id=task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="Таблица не найдена")
-    return db_task
+    return await crud.task_to_schema(db=db, task=db_task)
 
 @app.put("/tasks/{task_id}", response_model=schemas.Task)
 async def update_task(task_id: int, task: schemas.TaskUpdate, db: AsyncSession = Depends(get_db)):
     db_task = await crud.get_task(db=db, task_id=task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="Таблица не найдена")
-    return await crud.update_task(db=db, task_id=task_id, task=task)
+    updated_task = await crud.update_task(db=db, task_id=task_id, task=task)
+    return await crud.task_to_schema(db=db, task=updated_task)
 
 @app.delete("/tasks/{task_id}")
 async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)):
-    task = await crud.get_task(db, task_id=task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Таблица не найдена")
-    await crud.delete_task(db=db, task_id=task_id)
-    return {"message": "Задача удалена"}
+    response = await crud.delete_task(db=db, task_id=task_id)
+    if response["message"] == "Задача не найдена":
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+    return response

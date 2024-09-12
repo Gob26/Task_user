@@ -1,4 +1,11 @@
+from logging.config import fileConfig
+
 from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings
+from sqlalchemy import engine_from_config, create_engine
+from sqlalchemy import pool
+from alembic import context
+
 
 class Settings(BaseSettings):
     DB_HOST: str

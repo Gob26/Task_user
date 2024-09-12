@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Annotated
 
 
-intpk = Annotated[int, mapped_column(primary_key=True)]
+intpk = Annotated[int, mapped_column(primary_key=True, autoincrement=True)] #сократили, авто уник значение
 
 
 class User(Base):

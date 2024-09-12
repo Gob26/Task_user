@@ -13,7 +13,8 @@ class TaskCreate(TaskBase):          #для возможного расшире
 
 
 class TaskUpdate(TaskBase):
-    pass
+    title: Optional[str] = None
+    description: Optional[str] = None
 
 
 class Task(TaskBase):

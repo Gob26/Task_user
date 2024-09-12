@@ -5,6 +5,8 @@ from config import settings
 from database import database, Base
 import crud
 import schemas
+from async_lru import alru_cache
+
 
 engine = create_async_engine(settings.DATABASE_URL_asyncpg, echo=True)       # асинхронный движок
 async_session_maker = async_sessionmaker(                                     # асинхронная фабрика сессий
@@ -28,6 +30,7 @@ async def lifespan(app: FastAPI):                             #управлен�
 
 app = FastAPI(lifespan=lifespan)
 
+
 async def get_db() -> AsyncSession:
     async with async_session_maker() as session:                #получение сессии
         yield session
@@ -43,19 +46,19 @@ async def create_task(task: schemas.TaskCreate, user_id: int = Query(..., descri
     db_task = await crud.create_task(db=db, task=task, user_id=user_id)
     return await crud.task_to_schema(db=db, task=db_task)
 
-
+@alru_cache(maxsize=128)
 @app.get("/tasks/", response_model=list[schemas.Task])
 async def read_tasks(user_id: int, db: AsyncSession = Depends(get_db)):
     tasks = await crud.get_tasks_user(db=db, user_id=user_id)
     return [await crud.task_to_schema(db=db, task=task) for task in tasks]
 
-
+@alru_cache(maxsize=128)
 @app.get("/tasks/all/", response_model=list[schemas.Task])
 async def read_all_tasks(db: AsyncSession = Depends(get_db)):
     tasks = await crud.get_tasks_all(db=db)
     return [await crud.task_to_schema(db=db, task=task) for task in tasks]
 
-
+@alru_cache(maxsize=128)
 @app.get("/tasks/{task_id}", response_model=schemas.Task)
 async def read_task(task_id: int, db: AsyncSession = Depends(get_db)):
     db_task = await crud.get_task(db=db, task_id=task_id)

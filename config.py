@@ -1,11 +1,5 @@
-from logging.config import fileConfig
-
 from pydantic_settings import BaseSettings
-from pydantic_settings import BaseSettings
-from sqlalchemy import engine_from_config, create_engine
-from sqlalchemy import pool
-from alembic import context
-
+import os
 
 class Settings(BaseSettings):
     DB_HOST: str
@@ -21,8 +15,27 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-settings = Settings()
+class Settings_Test(BaseSettings):    #для тестов переводим export TEST_ENV=true
+    TEST_DB_HOST: str
+    TEST_DB_PORT: int
+    TEST_DB_USER: str
+    TEST_DB_PASSWORD: str
+    TEST_DB_NAME: str
 
-# проверка подключения
-#db_url = settings.DATABASE_URL_asyncpg
-#print(db_url)
+    @property
+    def DATABASE_URL_asyncpg(self) -> str:
+        return f'postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASSWORD}@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}'
+
+    class Config:
+        env_file = ".env"
+
+def get_settings():
+    if os.getenv('TEST_ENV') == 'true':
+        return Settings_Test()
+    return Settings()
+
+settings = get_settings()
+
+# Пример проверки подключения
+db_url = settings.DATABASE_URL_asyncpg
+print(db_url)

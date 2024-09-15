@@ -5,7 +5,6 @@ from schemas import TaskUpdate, TaskCreate, UserCreate
 from models import Task, User
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 async def create_task(db: AsyncSession, task: TaskCreate, user_id: int):  # Убедитесь, что user_id присутствует в аргументах
     db_task = Task(**task.model_dump(), user_id=user_id)
     db.add(db_task)
@@ -24,6 +23,15 @@ async def create_user(db: AsyncSession, user: UserCreate):
     await db.commit()
     await db.refresh(db_user)
     return db_user
+
+@alru_cache(maxsize=128)
+async def user_to_schema(db: AsyncSession, user: User) -> schemas.User:
+    return schemas.User(
+        id=user.id,
+        name=user.name,
+        surname=user.surname
+    )
+
                                                                         #декоратор для кеширования async_lru
 @alru_cache(maxsize=128)
 async def get_tasks_user(db: AsyncSession, user_id: int):              # Получение списка задач для пользователя

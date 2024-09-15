@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, async_session
 from config import settings
 from database import database, Base
@@ -7,6 +7,10 @@ import crud
 import schemas
 from async_lru import alru_cache
 
+
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 engine = create_async_engine(settings.DATABASE_URL_asyncpg, echo=True)       # асинхронный движок
 async_session_maker = async_sessionmaker(                                     # асинхронная фабрика сессий
@@ -30,15 +34,28 @@ async def lifespan(app: FastAPI):                             #управлен�
 
 app = FastAPI(lifespan=lifespan)
 
+# Настройка Jinja2Templates
+templates = Jinja2Templates(directory="templates")
+
+# Подключение статических файлов
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("main.html", {"request": request})
+
 
 async def get_db() -> AsyncSession:
     async with async_session_maker() as session:                #получение сессии
         yield session
 
 
-@app.post("/users/", response_model=schemas.UserCreate)
+@app.post("/users/", response_model=schemas.User)
 async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
-    return await crud.create_user(db=db, user=user)
+    db_user = await crud.create_user(db=db, user=user)
+    return await crud.user_to_schema(db=db, user=db_user)
+
+
 
 
 @app.post("/tasks/", response_model=schemas.Task)

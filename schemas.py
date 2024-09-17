@@ -2,13 +2,13 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-
+                                                        #базовый доски
 class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
 
-
-class TaskCreate(TaskBase):          #для возможного расширения
+                                                        #для возможного расширения
+class TaskCreate(TaskBase):
     pass
 
 
@@ -27,7 +27,7 @@ class Task(TaskBase):
     class Config:
         from_attributes = True
 
-
+                                                        #базовый пользователи
 class UserBase(BaseModel):
     name: str
     surname: str
@@ -44,7 +44,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-
+                                                        #автоматически заполняет значения из переданных атрибутов
     class Config:
         from_attributes = True
 

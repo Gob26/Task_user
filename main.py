@@ -1,6 +1,4 @@
 from contextlib import asynccontextmanager
-from http.client import responses
-
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession, async_session
 from config import settings

@@ -1,8 +1,5 @@
-from async_lru import alru_cache     #кеширование
-from dns.e164 import query
+from async_lru import alru_cache                            #кеширование
 from sqlalchemy import select, delete
-from websockets.version import commit
-
 import schemas
 from schemas import TaskUpdate, TaskCreate, UserCreate, UserUpdate
 from models import Task, User
@@ -14,8 +11,7 @@ async def create_task(db: AsyncSession, task: TaskCreate, user_id: int):  # Уб
     db.add(db_task)
     await db.commit()
     await db.refresh(db_task)
-    # Очистка кэша после создания задачи
-    task_to_schema.cache_clear()
+    task_to_schema.cache_clear()                                            #очистка кэша доскок
     get_tasks_user.cache_clear()
     get_tasks_all.cache_clear()
     return db_task
@@ -26,7 +22,7 @@ async def create_user(db: AsyncSession, user: UserCreate):
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
-    user_to_schema.cache_clear()
+    user_to_schema.cache_clear()                                            #очистка кэша пользователей
     get_all_users.cache_clear()
     return db_user
 
@@ -38,6 +34,7 @@ async def user_to_schema(db: AsyncSession, user: User) -> schemas.User:
         name=user.name,
         surname=user.surname
     )
+
 
 @alru_cache(maxsize=128)
 async def get_all_users(db: AsyncSession):
@@ -123,8 +120,6 @@ async def delete_user(db: AsyncSession, user_id: int):
         get_all_users.cache_clear()
         return {"message": f"Пользователь {user_data} удален"}
     return {"message": "Пользователь не найден"}
-
-
 
 @alru_cache(maxsize=128)                  #декоратор для кеширования async_lru
 async def task_to_schema(db: AsyncSession, task: Task) -> schemas.Task:

@@ -14,7 +14,9 @@ class User(Base):
     name: Mapped[str]
     surname: Mapped[str]
 
-    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="owner")
+    tasks: Mapped[list["Task"]] = relationship("Task",
+                                               back_populates="owner",
+                                               cascade='all, delete-orphan') #каскадное удаление
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -24,6 +26,6 @@ class Task(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=text('TIMEZONE(\'utc\', NOW())'))  # тестировать
     updated_at: Mapped[datetime] = mapped_column(server_default=text('TIMEZONE(\'utc\', NOW())'),
     onupdate=datetime.utcnow)                                                                      # заменить
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     owner: Mapped["User"] = relationship("User", back_populates="tasks")

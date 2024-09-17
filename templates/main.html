@@ -13,6 +13,10 @@
             <!-- Список задач будет загружен сюда -->
         </ul>
 
+        <h2>Список пользователей</h2>
+        <ul id="users-list">
+            <!-- Список пользователей будет загружен сюда -->
+        </ul>
     </div>
     <script>
         // Функция для загрузки задач
@@ -80,10 +84,75 @@
             }
         }
 
+        // Функция для загрузки пользователей
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/users/all');
+                if (!response.ok) throw new Error('Ошибка при загрузке пользователей');
+                const users = await response.json();
+                const usersList = document.getElementById('users-list');
+                usersList.innerHTML = ''; // Очистка списка пользователей
+                users.forEach(user => {
+                    const userItem = document.createElement('li');
+                    userItem.innerHTML = `
+                        <div class="user-item">
+                            <span>ID: ${user.id}, Имя: ${user.name}</span>
+                            <div class="user-buttons">
+                                <button onclick="deleteUser(${user.id})">Удалить</button>
+                                <button onclick="editUser(${user.id})">Редактировать</button>
+                            </div>
+                        </div>
+                    `;
+                    usersList.appendChild(userItem);
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке пользователей:', error);
+                alert('Ошибка при загрузке пользователей');
+            }
+        }
+
+        // Функция для удаления пользователя
+        async function deleteUser(userId) {
+            try {
+                const response = await fetch(`/users/${userId}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) throw new Error('Ошибка при удалении пользователя');
+                alert('Пользователь успешно удалён!');
+                fetchUsers(); // Обновляем список пользователей
+            } catch (error) {
+                console.error('Ошибка при удалении пользователя:', error);
+                alert('Ошибка при удалении пользователя');
+            }
+        }
+
+        // Функция для редактирования пользователя
+        async function editUser(userId) {
+            const newName = prompt('Введите новое имя пользователя:');
+            if (newName) {
+                try {
+                    const response = await fetch(`/users/${userId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name: newName }),
+                    });
+                    if (!response.ok) throw new Error('Ошибка при обновлении пользователя');
+                    alert('Пользователь успешно обновлён!');
+                    fetchUsers(); // Обновляем список пользователей
+                } catch (error) {
+                    console.error('Ошибка при обновлении пользователя:', error);
+                    alert('Ошибка при обновлении пользователя');
+                }
+            }
+        }
+
         // Инициализация страницы
-        window.onload = fetchTasks; // Загружаем список задач при загрузке страницы
-
-
+        window.onload = () => {
+            fetchTasks(); // Загружаем список задач при загрузке страницы
+            fetchUsers();  // Загружаем список пользователей при загрузке страницы
+        };
     </script>
 </body>
 </html>

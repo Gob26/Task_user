@@ -1,9 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Главная страница</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список задач</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <h1>Добро пожаловать на главную страницу!</h1>
+    <div class="container">
+        <h1>Список задач</h1>
+        <ul id="tasks-list">
+            <!-- Список задач будет загружен сюда -->
+        </ul>
+
+    </div>
+    <script>
+        // Функция для загрузки задач
+        async function fetchTasks() {
+            try {
+                const response = await fetch('/tasks/all/');
+                if (!response.ok) throw new Error('Ошибка при загрузке задач');
+                const tasks = await response.json();
+                const tasksList = document.getElementById('tasks-list');
+                tasksList.innerHTML = ''; // Очистка списка задач
+                tasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.innerHTML = `
+                        <div class="task-item">
+                            <span>ID: ${task.id}, Название: ${task.title}, Описание: ${task.description}</span>
+                            <div class="task-buttons">
+                                <button onclick="deleteTask(${task.id})">Удалить</button>
+                                <button onclick="editTask(${task.id})">Редактировать</button>
+                            </div>
+                        </div>
+                    `;
+                    tasksList.appendChild(taskItem);
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке задач:', error);
+                alert('Ошибка при загрузке задач');
+            }
+        }
+
+        // Функция для удаления задачи
+        async function deleteTask(taskId) {
+            try {
+                const response = await fetch(`/tasks/${taskId}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) throw new Error('Ошибка при удалении задачи');
+                alert('Задача успешно удалена!');
+                fetchTasks(); // Обновляем список задач
+            } catch (error) {
+                console.error('Ошибка при удалении задачи:', error);
+                alert('Ошибка при удалении задачи');
+            }
+        }
+
+        // Функция для редактирования задачи
+        async function editTask(taskId) {
+            const newTitle = prompt('Введите новое название задачи:');
+            const newDescription = prompt('Введите новое описание задачи:');
+            if (newTitle && newDescription) {
+                try {
+                    const response = await fetch(`/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ title: newTitle, description: newDescription }),
+                    });
+                    if (!response.ok) throw new Error('Ошибка при обновлении задачи');
+                    alert('Задача успешно обновлена!');
+                    fetchTasks(); // Обновляем список задач
+                } catch (error) {
+                    console.error('Ошибка при обновлении задачи:', error);
+                    alert('Ошибка при обновлении задачи');
+                }
+            }
+        }
+
+        // Инициализация страницы
+        window.onload = fetchTasks; // Загружаем список задач при загрузке страницы
+
+
+    </script>
 </body>
 </html>

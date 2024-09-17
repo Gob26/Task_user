@@ -33,6 +33,11 @@ class UserBase(BaseModel):
     surname: str
 
 
+class UserUpdate(UserBase):
+    name: Optional[str] = None
+    surname: Optional[str] = None
+
+
 class UserCreate(UserBase):
     pass
 

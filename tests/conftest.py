@@ -1,11 +1,8 @@
-from sys import get_asyncgen_hooks
 from typing import AsyncGenerator
-from fastapi.testclient import TestClient
 from httpx import AsyncClient
 import pytest
 import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import MetaData, NullPool
 from config import settings
 from main import app, get_db
